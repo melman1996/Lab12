@@ -43,7 +43,10 @@ public class MainActivity extends AppCompatActivity{
     private TextView mUpdated;
     private TextView mIcon;
     private TextView mTemperature;
+    private TextView mTemperatureMax;
+    private TextView mTemperatureMin;
     private TextView mDetails;
+    private TextView mWind;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +68,10 @@ public class MainActivity extends AppCompatActivity{
         mIcon = findViewById(R.id.icon);
         mIcon.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/weather.ttf"));
         mTemperature = findViewById(R.id.temperature);
+        mTemperatureMax = findViewById(R.id.temperature_max);
+        mTemperatureMin = findViewById(R.id.temperature_min);
         mDetails = findViewById(R.id.details);
+        mWind = findViewById(R.id.wind);
     }
 
     @Override
@@ -153,6 +159,9 @@ public class MainActivity extends AppCompatActivity{
                         "Humidity: " + data.getMain().getHumidity() + "%\n" +
                         "Pressure: " + data.getMain().getPressure() + "hPa");
         mTemperature.setText(String.format("%.2f", data.getMain().getTemp()) + "℃");
+        mTemperatureMax.setText(String.format("%.2f", data.getMain().getTemp_max()) + "℃");
+        mTemperatureMin.setText(String.format("%.2f", data.getMain().getTemp_min()) + "℃");
+        mWind.setText(data.getWind().getSpeed() + "km/h");
         DateFormat df = DateFormat.getDateTimeInstance();
         String updatedOn = df.format(new Date(data.getDt() * 1000));
         mUpdated.setText("Last updated: " + updatedOn);
