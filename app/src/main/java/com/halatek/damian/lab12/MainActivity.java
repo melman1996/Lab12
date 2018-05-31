@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fetchCurrentWeather(getCurrentLocation());
+                fetchCurrentWeatherFromLocation(getCurrentLocation());
             }
         });
 
@@ -90,6 +90,8 @@ public class MainActivity extends AppCompatActivity{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            CityDialog dialog = new CityDialog(this);
+            dialog.show();
             return true;
         }
 
@@ -110,9 +112,31 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void fetchCurrentWeather(Location location){
+    public void fetchCurrentWeatherFromLocation(Location location){
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = String.format("http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&units=metric&appid=%s",location.getLatitude(), location.getLongitude(), KEY);
+        StringRequest stringRequest = new StringRequest(
+                Request.Method.GET,
+                url,
+                new Response.Listener<String>(){
+                    @Override
+                    public void onResponse(String response) {
+                        Gson gson = new Gson();
+                        WeatherData data = gson.fromJson(response, WeatherData.class);
+                        displayWeatherInfo(data);
+                    }
+                },
+                new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                });
+        queue.add(stringRequest);
+    }
+
+    public void fetchCurrentWeatherFromCity(int id){
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url = String.format("http://api.openweathermap.org/data/2.5/weather?id=%d&units=metric&appid=%s",id , KEY);
         StringRequest stringRequest = new StringRequest(
                 Request.Method.GET,
                 url,
