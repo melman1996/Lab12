@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity{
     private final static String KEY = "4985f781a282b9ed64debe4494e81dc0";
     private final static int PERMISSION_REQUEST_CODE = 1;
 
+    private Location mLocation;
+
     private TextView mCity;
     private TextView mUpdated;
     private TextView mIcon;
@@ -59,7 +61,8 @@ public class MainActivity extends AppCompatActivity{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fetchCurrentWeatherFromLocation(getCurrentLocation());
+                mLocation = getCurrentLocation();
+                displayWeather();
             }
         });
 
@@ -72,6 +75,9 @@ public class MainActivity extends AppCompatActivity{
         mTemperatureMin = findViewById(R.id.temperature_min);
         mDetails = findViewById(R.id.details);
         mWind = findViewById(R.id.wind);
+
+        mLocation = getCurrentLocation();
+        displayWeather();
     }
 
     @Override
@@ -100,19 +106,27 @@ public class MainActivity extends AppCompatActivity{
 
     private Location getCurrentLocation(){
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        Location location;
         if(checkPermission()){
-            return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(location == null){
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }
         } else {
             requestPermission();
             if(checkPermission()){
-                return locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if(location == null){
+                    location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                }
             } else {
                 return null;
             }
         }
+        return location;
     }
 
-    public void fetchCurrentWeatherFromLocation(Location location){
+    public void fetchCurrentWeatherFromLocation(@NonNull Location location){
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = String.format("http://api.openweathermap.org/data/2.5/weather?lat=%s&lon=%s&units=metric&appid=%s",location.getLatitude(), location.getLongitude(), KEY);
         StringRequest stringRequest = new StringRequest(
@@ -123,7 +137,7 @@ public class MainActivity extends AppCompatActivity{
                     public void onResponse(String response) {
                         Gson gson = new Gson();
                         WeatherData data = gson.fromJson(response, WeatherData.class);
-                        displayWeatherInfo(data);
+                        renderWeatherInfo(data);
                     }
                 },
                 new Response.ErrorListener(){
@@ -145,7 +159,7 @@ public class MainActivity extends AppCompatActivity{
                     public void onResponse(String response) {
                         Gson gson = new Gson();
                         WeatherData data = gson.fromJson(response, WeatherData.class);
-                        displayWeatherInfo(data);
+                        renderWeatherInfo(data);
                     }
                 },
                 new Response.ErrorListener(){
@@ -177,7 +191,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    private void displayWeatherInfo(WeatherData data){
+    private void renderWeatherInfo(WeatherData data){
         mCity.setText(data.getName().toUpperCase() + ", " + data.getSys().getCountry());
         mDetails.setText(data.getWeather()[0].getDescription().toUpperCase() + "\n" +
                         "Humidity: " + data.getMain().getHumidity() + "%\n" +
@@ -223,5 +237,13 @@ public class MainActivity extends AppCompatActivity{
             }
         }
         mIcon.setText(icon);
+    }
+
+    private void displayWeather(){
+        if(mLocation != null) {
+            fetchCurrentWeatherFromLocation(mLocation);
+        } else {
+            Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_LONG).show();
+        }
     }
 }
