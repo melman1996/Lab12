@@ -29,6 +29,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.halatek.damian.lab12.Model.City;
 import com.halatek.damian.lab12.Model.WeatherData;
 
 import java.text.DateFormat;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity{
     private final static int PERMISSION_REQUEST_CODE = 1;
 
     private Location mLocation;
+    private City mSelectedCity;
 
     private TextView mCity;
     private TextView mUpdated;
@@ -61,7 +63,9 @@ public class MainActivity extends AppCompatActivity{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLocation = getCurrentLocation();
+                if(mSelectedCity.getId() < 0){
+                    mLocation = getCurrentLocation();
+                }
                 displayWeather();
             }
         });
@@ -76,6 +80,7 @@ public class MainActivity extends AppCompatActivity{
         mDetails = findViewById(R.id.details);
         mWind = findViewById(R.id.wind);
 
+        mSelectedCity = new City("Current location", -1);
         mLocation = getCurrentLocation();
         displayWeather();
     }
@@ -241,9 +246,19 @@ public class MainActivity extends AppCompatActivity{
 
     private void displayWeather(){
         if(mLocation != null) {
-            fetchCurrentWeatherFromLocation(mLocation);
+            if(mSelectedCity.getId() >= 0){
+                fetchCurrentWeatherFromCity(mSelectedCity.getId());
+            } else {
+                mLocation = getCurrentLocation();
+                fetchCurrentWeatherFromLocation(mLocation);
+            }
         } else {
             Toast.makeText(MainActivity.this, "Location is null", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void setSelectedCity(City city){
+        this.mSelectedCity = city;
+        displayWeather();
     }
 }

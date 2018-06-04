@@ -38,6 +38,7 @@ public class CityDialog extends Dialog implements AdapterView.OnItemSelectedList
 
         setContentView(R.layout.dialog_settings);
 
+        mCities.add(new City("Current location", -1));
         mCities.add(new City("Hurzuf", 707860));
         mCities.add(new City("Verkhneye Shchekotikhino", 475279));
         mCities.add(new City("Sankt Nikolai im Sausal", 7872417));
@@ -54,7 +55,7 @@ public class CityDialog extends Dialog implements AdapterView.OnItemSelectedList
         mAccept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity) mContext).fetchCurrentWeatherFromCity(mSelectedCity.getId());
+                ((MainActivity) mContext).setSelectedCity(mSelectedCity);
                 dismiss();
             }
         });
